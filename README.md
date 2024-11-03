@@ -4,7 +4,7 @@
 
 ## Features
 - **AI-Powered Responses**: Uses OpenAI’s API to generate responses based on livestream chat messages.
-- **Text-to-Speech Output**: Converts responses to speech using `pyttsx3` (currently the only supported TTS engine).
+- **Text-to-Speech Output**: Converts responses to speech using `pyttsx3` or `openai`.
 - **Live Chat Processing**: Reads and processes messages from YouTube livestreams in real time.
 
 ## Requirements
@@ -41,4 +41,4 @@
 To start YouTuber-AI, open a terminal, navigate to the project directory, and run:
 
 ```bash
-python main.py -id <LIVE_STREAM_ID> -tts pyttsx3
+python main.py -id <LIVE_STREAM_ID> -tts <TTS_type>

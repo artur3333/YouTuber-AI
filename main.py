@@ -3,9 +3,13 @@ import pyttsx3
 import pytchat
 import time
 import argparse
+from pydub import AudioSegment
+from pydub.playback import play
+from pathlib import Path
+import os
 from openai import OpenAI
 
-def PyTTSInitialization():
+def PyTTSInitialization(): # Initialize pyttsx3
     global engine
     engine = pyttsx3.init()
     voices = engine.getProperty('voices')
@@ -13,8 +17,7 @@ def PyTTSInitialization():
     engine.setProperty('volume', 1.0)
     engine.setProperty('voice', voices[1].id)
 
-def VariableInitialization():
-    global OAI_key
+def VariableInitialization(): # Initialize all the variables and read the JSON file for API keys and other configurations
     global video_id
     global tts_type
     global OAI
@@ -26,9 +29,12 @@ def VariableInitialization():
         print("Unable to open JSON file.")
         exit()
 
-    tts_list = ["pyttsx3"]
+    class OAI: 
+        key = data["apikeys"][0]["OAI_key"]
 
-    parser = argparse.ArgumentParser()
+    tts_list = ["pyttsx3", "openai"]
+
+    parser = argparse.ArgumentParser() # Command line arguments
     parser.add_argument("-id", "--video_id", type=str, help="Video ID")
     parser.add_argument("-tts", "--tts_type", type=str, help="TTS Type", choices=tts_list, default="pyttsx3")
     args = parser.parse_args()
@@ -39,21 +45,45 @@ def VariableInitialization():
     if tts_type == "pyttsx3":
         PyTTSInitialization()
 
-    class OAI:
-        key = data["apikeys"][0]["OAI_key"]
+def WhatTTS(message): # Check which TTS to use 
+    if tts_type == "openai":
+        OAI_TTS(message)
+    
+    elif tts_type == "pyttsx3":
+        Py_TTS(message)
 
-def WhatTTS(message):
-    if tts_type == "pyttsx3":
-        PyTTS(message)
-
-def PyTTS(message):
+def Py_TTS(message): # pyttsx3 TTS function
     try:
         engine.say(message)
         engine.runAndWait()
     except Exception as e:
         print("PyTTS error: " + str(e))
 
-def read_chat():
+def OAI_TTS(message): # OpenAI TTS function
+    global client
+    client = OpenAI(api_key=OAI.key)
+    speech_file_path = Path(__file__).parent / "speech.mp3"
+
+    try:
+        response = client.audio.speech.create(
+            model = "tts-1",
+            voice = "nova",
+            input = message,
+        )
+
+        response.stream_to_file(speech_file_path)
+
+        if speech_file_path.exists() and os.path.getsize(speech_file_path) > 0:
+            sound = AudioSegment.from_mp3(speech_file_path)
+            print("\nSaying... ")
+            play(sound)
+        else:
+            print("Error in OAI_TTS: No speech file found.")
+
+    except Exception as e:
+        print("Error in OAI_TTS: " + str(e))
+
+def read_chat(): # Read the chat
     chat = pytchat.create(video_id=video_id)
 
     try:
@@ -73,10 +103,11 @@ def read_chat():
                 except Exception as e:
                     print("Error in read chat: " + str(e))
                     break
+
     except KeyboardInterrupt:
         print("\nInterrupted by user. Program terminated.\n")
 
-def text_generator(message):
+def text_generator(message): # Generate response
     client = OpenAI(api_key=OAI.key)
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -100,11 +131,11 @@ def text_generator(message):
         print("Error in text generator: " + str(e))
         return "Error in text generator"
     
-def main():
+def main(): # Main function
     VariableInitialization()
     print("\nReading Chat!\n\n")
     read_chat()
     print("\nProgram terminated.\n")
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     main()
