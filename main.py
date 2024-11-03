@@ -8,6 +8,7 @@ from pydub import AudioSegment
 from pathlib import Path
 import os
 import sys
+from twitchio.ext import commands
 from openai import OpenAI
 
 
@@ -23,27 +24,34 @@ def PyTTSInitialization(): # Initialize pyttsx3
 def VariableInitialization(): # Initialize all the variables and read the JSON file for API keys and other configurations
     global video_id
     global tts_type
-    global OAI
+    global platform
+    global OAI_key
+    global token, nickname, channel
 
     try:
         with open("config.json", "r") as json_file:
             data = json.load(json_file)
+        OAI_key = data["apikeys"][0]["OAI_key"]
+        token = data["twitch"][0]["token"]
+        nickname = data["twitch"][0]["nickname"]
+        channel = data["twitch"][0]["channel"]
+
     except FileNotFoundError:
         print("Unable to open JSON file.")
-        exit()
-
-    class OAI: 
-        key = data["apikeys"][0]["OAI_key"]
+        exit()   
 
     tts_list = ["pyttsx3", "openai"]
+    platform_list = ["youtube", "twitch"]
 
     parser = argparse.ArgumentParser() # Command line arguments
     parser.add_argument("-id", "--video_id", type=str, help="Video ID")
     parser.add_argument("-tts", "--tts_type", type=str, help="TTS Type", choices=tts_list, default="pyttsx3")
+    parser.add_argument("-p", "--platform", type=str, help="Platform", choices=platform_list)
     args = parser.parse_args()
     
     video_id = args.video_id
     tts_type = args.tts_type
+    platform = args.platform
 
     if tts_type == "pyttsx3":
         PyTTSInitialization()
@@ -67,7 +75,7 @@ def Py_TTS(message): # pyttsx3 TTS function
 
 def OAI_TTS(message): # OpenAI TTS function
     global client
-    client = OpenAI(api_key=OAI.key)
+    client = OpenAI(api_key=OAI_key)
     speech_file_path = Path(__file__).parent / "speech.mp3"
     wav_file_path = Path(__file__).parent / "speech.wav"
 
@@ -97,7 +105,8 @@ def OAI_TTS(message): # OpenAI TTS function
         print("Error in OAI_TTS: " + str(e))
 
 
-def read_chat(): # Read the chat
+# Read the YouTube chat
+def YT_read_chat():
     chat = pytchat.create(video_id=video_id)
 
     while chat.is_alive():
@@ -126,8 +135,33 @@ def read_chat(): # Read the chat
             sys.exit(0)
 
 
+# Read the Twitch chat
+class TwitchBot(commands.Bot):
+    def __init__(self):
+        super().__init__(token=token, prefix="!", initial_channels=[channel])
+
+    async def event_ready(self):
+        print(f"Bot is ready! {self.nick}")
+    
+    async def event_message(self, message):
+        username = message.author.name
+        content = message.content
+        datetime = message.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+
+        print (f"\n{datetime} {username} > {content}\n")
+
+        response = text_generator(content)
+        print(f"Response: {response}")
+
+        WhatTTS(response)
+
+        time.sleep(1)
+        
+        await self.handle_commands(message)
+
+
 def text_generator(message): # Generate response
-    client = OpenAI(api_key=OAI.key)
+    client = OpenAI(api_key=OAI_key)
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -154,12 +188,18 @@ def text_generator(message): # Generate response
 def main(): # Main function
     # Initialize variables (video_id, tts_type)
     VariableInitialization()
+    bot = TwitchBot()
 
-    print("\nStarting Chat Reader!\n\n")
-
-    # Read the chat and generate response
+    # Check the platform
     try:
-        read_chat()
+        if platform == "youtube":
+            print("\nStarting YouTube Chat Reader!\n\n")
+            YT_read_chat()
+
+        elif platform == "twitch":
+            print("\nStarting Twitch Chat Reader!\n\n")
+            bot.run()
+
     except Exception as e:
         print("Error in main: " + str(e))
     

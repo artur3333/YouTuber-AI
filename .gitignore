@@ -1,6 +1,4 @@
 ffmpeg.exe
-ffplay.exe
 ffprobe.exe
-config.json
 speech.wav
 speech.mp3

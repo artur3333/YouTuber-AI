@@ -3,5 +3,13 @@
         {
             "OAI_key": "YOUR_OpenAI_KEY"
         }
+    ],
+
+    "twitch": [
+        {
+            "token": "YOUR_TWITCH_TOKEN",
+            "nickname": "YOUR_NICKNAME",
+            "channel": "YOUR_CHANNEL"
+        }
     ]
 }
