@@ -1,9 +1,10 @@
 # YouTuber-AI
 
-**YouTuber-AI** is a Python application that reads live chat messages from a specified YouTube or Twitch livestream and generates AI-driven responses using OpenAI's GPT-3.5 model. The responses are converted to speech using a Text-to-Speech (TTS) engine, creating an interactive and engaging experience for livestream audiences.
+**YouTuber-AI** is a Python application that reads live chat messages from a specified YouTube or Twitch livestream and generates AI-driven responses using OpenAI's GPT-3.5 model making replies based on chat messages, retains chat history for context. The responses are converted to speech using a Text-to-Speech (TTS) engine, creating an interactive and engaging experience for livestream audiences.
 
 ## Features
 - **AI-Powered Responses**: Uses OpenAI’s API to generate conversational responses from live chat messages in real time.
+- **Chat History**: Remembers chat history for context-aware responses.
 - **Text-to-Speech Output**: Converts responses to audio using either `pyttsx3` or `OpenAI's TTS` options, making the interaction vocal and dynamic.
 - **Multi-Platform**: Choose between different platforms: `youtube` or `twitch`.
 - **Live Chat Processing**: Reads and processes messages from YouTube or Twitch livestreams.
@@ -86,6 +87,7 @@
 YouTuber-AI
 ├── main.py             # Main script to run the application
 ├── config.json         # Configuration file for storing API keys and settings
+├── conversation.json   # Stores the conversation history used for generating responses
 ├── ffmpeg.exe          # FFmpeg executable for audio processing (Windows)
 ├── ffprobe.exe         # FFprobe executable for media information (Windows)
 ├── requirements.txt    # List of Python dependencies
@@ -94,14 +96,15 @@ YouTuber-AI
 
 ## Usage
 
-To start YouTuber-AI, open a terminal, navigate to the project directory, and run the following command:
+To start YouTuber-AI, open a terminal in the project directory and run main.py with the necessary arguments:
 
 ```bash
-python main.py -id <LIVE_STREAM_ID> -tts <TTS_TYPE> -p <PLATFORM>
+python main.py -id <LIVE_STREAM_ID> -tts <TTS_TYPE> -p <PLATFORM> -d
 ```
-- TTS_TYPE = (default) `pyttsx3` or `openai`.
-- PLATFORM = `youtube` or `twitch`.
-- for the `twitch` platform there is no need to put the `-id <LIVE_STREAM_ID>`.
+- -id <LIVE_STREAM_ID>: YouTube only. The ID of the live stream.
+- -tts <TTS_TYPE>: Text-to-Speech type. Options: `pyttsx3` or `openai`.
+- -p <PLATFORM>: Platform for streaming. Options: `youtube` or `twitch`.
+- -d: Enables debug mode for detailed logs.
 
 ## Contributing
 
