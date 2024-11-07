@@ -9,7 +9,11 @@ from pathlib import Path
 import os
 import sys
 from twitchio.ext import commands
+from datetime import datetime
 from openai import OpenAI
+
+
+sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1) # Set the standard output encoding to UTF-8
 
 
 def PyTTSInitialization(): # Initialize pyttsx3
@@ -32,6 +36,7 @@ def VariableInitialization(): # Initialize all the variables and read the JSON f
     global characters
     global token, nickname, channel
     global debug_option
+    global LOG_FILE
 
     try:
         with open("config.json", "r") as json_file:
@@ -68,6 +73,8 @@ def VariableInitialization(): # Initialize all the variables and read the JSON f
 
     speak = False
     characters = 0
+
+    LOG_FILE = "conversation_log.txt"
 
     if tts_type == "pyttsx3":
         PyTTSInitialization()
@@ -173,6 +180,10 @@ def YT_read_chat():
                         conversation.append({"role": "user", "content": now})
                         prev = now
 
+                    log_entry = (f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {c.author.name} > {c.message}\n")
+                    with open(LOG_FILE, "a", encoding="utf-8") as log_file:
+                        log_file.write(log_entry)
+
                     # Generate response
                     response = text_generator(message_youtube)
                     print(f"Response: {response}")
@@ -206,7 +217,6 @@ class TwitchBot(commands.Bot): # Twitch Bot class
         content = message.content
         datetime = message.timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
-
         chatmsg = (f"\n{datetime} {username} > {content}\n")
         print(chatmsg)
         message_twitch = (f"{username} said {content}")
@@ -214,6 +224,10 @@ class TwitchBot(commands.Bot): # Twitch Bot class
         if speak == False and now != prev:
             conversation.append({"role": "user", "content": now})
             prev = now
+
+        log_entry = (f"{datetime} - {username} > {content}\n")
+        with open(LOG_FILE, "a", encoding="utf-8") as log_file:
+            log_file.write(log_entry)
 
         response = text_generator(message_twitch)
         print(f"Response: {response}")
@@ -253,7 +267,7 @@ def text_generator(message): # Generate response
 
     client = OpenAI(api_key=OAI_key)
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
@@ -270,8 +284,13 @@ def text_generator(message): # Generate response
     try:
         response_text = completion.choices[0].message.content
 
-        conversation.append({"role": "assistant", "content": response_text})
+        response_text_for_history = (f"you responded: {response_text}")
+        conversation.append({"role": "assistant", "content": response_text_for_history})
         history_conversation["history"] = conversation
+
+        log_entry_responce = (f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - AI > {response_text}\n")
+        with open(LOG_FILE, "a", encoding="utf-8") as log_file:
+            log_file.write(log_entry_responce)
 
         with open("conversation.json", "w", encoding="utf-8") as f:
             json.dump(history_conversation, f, indent=4)

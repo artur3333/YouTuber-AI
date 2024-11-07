@@ -1,14 +1,16 @@
 # YouTuber-AI
 
-**YouTuber-AI** is a Python application that reads live chat messages from a specified YouTube or Twitch livestream and generates AI-driven responses using OpenAI's GPT-3.5 model making replies based on chat messages, retains chat history for context. The responses are converted to speech using a Text-to-Speech (TTS) engine, creating an interactive and engaging experience for livestream audiences.
+**YouTuber-AI** is a Python application that reads live chat messages from a specified YouTube or Twitch livestream and generates AI-driven responses using OpenAI's `gpt-4o-mini` model, remembers previous messages from users, and saves the chat logs for future reference. It also generate spoken responses using text-to-speech (TTS) systems. The program includes both command-line and graphical user interface (GUI).
 
 ## Features
 - **AI-Powered Responses**: Uses OpenAI’s API to generate conversational responses from live chat messages in real time.
 - **Chat History**: Remembers chat history for context-aware responses.
+- **Chat Logging**: Saves chat logs for later review.
 - **Text-to-Speech Output**: Converts responses to audio using either `pyttsx3` or `OpenAI's TTS` options, making the interaction vocal and dynamic.
 - **Multi-Platform**: Choose between different platforms: `youtube` or `twitch`.
 - **Live Chat Processing**: Reads and processes messages from YouTube or Twitch livestreams.
 - **Configurable TTS Options**: Choose between different TTS engines.
+- **UI interface**: Provides an intuitive interface (`ui_app.py`) for setting configurations and running the program.
 
 ## Requirements
 - **Python**: 3.x
@@ -85,17 +87,20 @@
 
 ```plaintext
 YouTuber-AI
-├── main.py             # Main script to run the application
-├── config.json         # Configuration file for storing API keys and settings
-├── conversation.json   # Stores the conversation history used for generating responses
-├── ffmpeg.exe          # FFmpeg executable for audio processing (Windows)
-├── ffprobe.exe         # FFprobe executable for media information (Windows)
-├── requirements.txt    # List of Python dependencies
-└── README.md           # Project readme with usage instructions and details
+├── main.py                 # Main script to run the application
+├── ui_app.py               # GUI application for easier configuration and management
+├── config.json             # Configuration file for storing API keys and settings
+├── conversation.json       # Stores the conversation history used for generating responses
+├── conversation_log.txt    # Saves all chat logs and AI responses
+├── ffmpeg.exe              # FFmpeg executable for audio processing (Windows)
+├── ffprobe.exe             # FFprobe executable for media information (Windows)
+├── icon.ico                # The Icon
+├── requirements.txt        # List of Python dependencies
+└── README.md               # Project readme with usage instructions and details
 ```
 
 ## Usage
-
+### Command Line Interface (CLI)
 To start YouTuber-AI, open a terminal in the project directory and run main.py with the necessary arguments:
 
 ```bash
@@ -105,6 +110,19 @@ python main.py -id <LIVE_STREAM_ID> -tts <TTS_TYPE> -p <PLATFORM> -d
 - -tts <TTS_TYPE>: Text-to-Speech type. Options: `pyttsx3` or `openai`.
 - -p <PLATFORM>: Platform for streaming. Options: `youtube` or `twitch`.
 - -d: Enables debug mode for detailed logs.
+
+---
+### Graphical User Interface (GUI)
+To start YouTuber-AI, open a terminal in the project directory and run ui_app.py:
+```bash
+python ui_app.py
+```
+- Enter the YouTube Stream ID (if applicable).
+- Select the TTS Type (either `pyttsx3` or `openai`).
+- Choose the Platform (`YouTube` or `Twitch`).
+- Optionally, check Enable Debug Mode for detailed logs.
+
+---
 
 ## Contributing
 
